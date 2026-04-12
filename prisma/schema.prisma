@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  expenseRows  ExpenseRow[]
+  incomeRows   IncomeRow[]
+  settings     Settings?
+}
+
+model ExpenseRow {
+  id          String      @id @default(cuid())
+  year        Int
+  expenseType ExpenseType
+  description String
+  jan         Float       @default(0)
+  feb         Float       @default(0)
+  mar         Float       @default(0)
+  apr         Float       @default(0)
+  may         Float       @default(0)
+  jun         Float       @default(0)
+  jul         Float       @default(0)
+  aug         Float       @default(0)
+  sep         Float       @default(0)
+  oct         Float       @default(0)
+  nov         Float       @default(0)
+  dec         Float       @default(0)
+  order       Int         @default(0)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId, year])
+}
+
+model IncomeRow {
+  id             String         @id @default(cuid())
+  year           Int
+  incomeType     IncomeType
+  incomeCategory IncomeCategory
+  description    String
+  jan            Float          @default(0)
+  feb            Float          @default(0)
+  mar            Float          @default(0)
+  apr            Float          @default(0)
+  may            Float          @default(0)
+  jun            Float          @default(0)
+  jul            Float          @default(0)
+  aug            Float          @default(0)
+  sep            Float          @default(0)
+  oct            Float          @default(0)
+  nov            Float          @default(0)
+  dec            Float          @default(0)
+  order          Int            @default(0)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId, year])
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  irpfRate  Float    @default(0)
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  updatedAt DateTime @updatedAt
+}
+
+enum ExpenseType {
+  FIXED
+  VARIABLE
+}
+
+enum IncomeType {
+  NET
+  GROSS
+}
+
+enum IncomeCategory {
+  SALARY
+  INTEREST
+  DIVIDEND
+  RENTAL
+  OTHER
+}
