@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import GastosTable from "./GastosTable";
+import IngresosTable from "./IngresosTable";
 import YearSelector from "@/app/components/YearSelector";
 
-export default async function GastosPage({
+export default async function IngresosPage({
   searchParams,
 }: {
   searchParams: Promise<{ year?: string }>;
@@ -17,10 +17,13 @@ export default async function GastosPage({
 
   const userId = (session.user as { id: string }).id;
 
-  const rows = await prisma.expenseRow.findMany({
-    where: { userId, year },
-    orderBy: { order: "asc" },
-  });
+  const [rows, settings] = await Promise.all([
+    prisma.incomeRow.findMany({
+      where: { userId, year },
+      orderBy: { order: "asc" },
+    }),
+    prisma.settings.findUnique({ where: { userId } }),
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -32,13 +35,13 @@ export default async function GastosPage({
             <nav className="flex items-center gap-1">
               <a
                 href={`/gastos?year=${year}`}
-                className="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg"
+                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Gastos
               </a>
               <a
                 href={`/ingresos?year=${year}`}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg"
               >
                 Ingresos
               </a>
@@ -47,7 +50,11 @@ export default async function GastosPage({
         </div>
       </header>
       <main className="p-4 sm:p-6">
-        <GastosTable initialRows={rows as Parameters<typeof GastosTable>[0]["initialRows"]} year={year} />
+        <IngresosTable
+          initialRows={rows as Parameters<typeof IngresosTable>[0]["initialRows"]}
+          initialIrpfRate={settings?.irpfRate ?? 0}
+          year={year}
+        />
       </main>
     </div>
   );
